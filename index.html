@@ -8,8 +8,8 @@
   <meta name="format-detection" content="telephone=no" />
   <title>FinanceTI 金融人格测试</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.92em' font-size='92'>💰</text></svg>" />
-  <script type="module" crossorigin src="/fiti/assets/index-BKugNXN6.js"></script>
-  <link rel="stylesheet" crossorigin href="/fiti/assets/index-CR_JfQU6.css">
+  <script type="module" crossorigin src="./assets/index-H0bnBkaY.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-DVa6weOC.css">
 </head>
 <body>
   <div id="app">
@@ -29,7 +29,7 @@
         </ul>
 
         <button id="btn-start" class="btn btn-primary">开始测试</button>
-        <p class="intro-note">约 5 分钟 · 31 道题（含 1 道身份问题）</p>
+        <p class="intro-note">约 5 分钟 · 33 道题（含 1 道身份问题 + 2 道随机彩蛋）</p>
         <p class="intro-credit">开源项目 · 仅供娱乐参考</p>
       </div>
     </section>
@@ -40,7 +40,7 @@
         <div class="progress-bar">
           <div class="progress-fill" id="progress-fill"></div>
         </div>
-        <div class="progress-text" id="progress-text">0 / 31</div>
+        <div class="progress-text" id="progress-text">0 / 33</div>
 
         <div class="question-area">
           <p class="question-hint" id="question-hint"></p>
@@ -84,10 +84,30 @@
         <p class="fun-note" id="fun-note"></p>
 
         <div class="result-actions">
+          <button id="btn-share" class="btn btn-secondary">📸 生成分享卡</button>
           <button id="btn-restart" class="btn btn-primary">重新测试</button>
         </div>
       </div>
     </section>
+
+    <!-- 分享海报 Modal -->
+    <div id="poster-modal" class="poster-modal" hidden>
+      <div class="poster-modal-backdrop" id="poster-backdrop"></div>
+      <div class="poster-modal-body">
+        <div class="poster-modal-hint">
+          <span class="poster-tip-icon">💡</span>
+          <span class="poster-tip-text">长按图片保存到相册 · 分享给朋友让 ta 也来测</span>
+        </div>
+        <div class="poster-img-wrap">
+          <div id="poster-loading" class="poster-loading">生成中…</div>
+          <img id="poster-img" class="poster-img" alt="FiTI 分享卡" />
+        </div>
+        <div class="poster-actions">
+          <a id="poster-download" class="btn btn-ghost" download="fiti-share.png">下载图片</a>
+          <button id="poster-close" class="btn btn-primary">关闭</button>
+        </div>
+      </div>
+    </div>
 
   </div>
 
