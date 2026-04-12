@@ -7,5 +7,6 @@ dist
 .vite
 .playwright-mcp
 /smoke-*.png
+/v*-*.png
 /tmp
 

@@ -618,3 +618,291 @@ body {
 @media (prefers-reduced-motion: reduce) {
   * { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
+
+/* =======================================================
+ * v2：扎心金句 / 稀有度芯片 / CP 卡片 / 彩蛋高亮
+ * ======================================================= */
+
+.result-extras {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  margin: 1.2rem 0 0.4rem;
+}
+
+/* 扎心金句：大字体引号 + 斜体正文，主金色左边线 */
+.result-roast {
+  position: relative;
+  margin: 0;
+  padding: 0.9rem 1.1rem 0.9rem 2.4rem;
+  background: linear-gradient(
+    135deg,
+    rgba(212, 169, 87, 0.09) 0%,
+    rgba(77, 214, 208, 0.04) 100%
+  );
+  border: 1px solid rgba(212, 169, 87, 0.25);
+  border-left: 3px solid var(--accent, #d4a957);
+  border-radius: 12px;
+}
+.roast-quote {
+  position: absolute;
+  left: 0.7rem;
+  top: -0.2rem;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 2.4rem;
+  line-height: 1;
+  color: var(--accent, #d4a957);
+  opacity: 0.85;
+  user-select: none;
+}
+.roast-text {
+  margin: 0;
+  font-size: 0.98rem;
+  line-height: 1.6;
+  color: var(--text, #f5ecd6);
+  font-style: italic;
+  letter-spacing: 0.01em;
+}
+
+/* meta 芯片：稀有度 / 绝技 / 难度横排 */
+.result-meta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.meta-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border: 1px solid rgba(245, 236, 214, 0.18);
+  border-radius: 999px;
+  background: rgba(245, 236, 214, 0.04);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+.meta-chip-label {
+  color: rgba(245, 236, 214, 0.58);
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+}
+.meta-chip-value {
+  color: var(--text, #f5ecd6);
+  font-weight: 600;
+}
+.meta-chip-rarity {
+  border-color: rgba(212, 169, 87, 0.45);
+  background: rgba(212, 169, 87, 0.08);
+}
+.meta-chip-rarity .meta-chip-value {
+  color: var(--accent, #d4a957);
+}
+.meta-chip-skill {
+  border-color: rgba(77, 214, 208, 0.35);
+  background: rgba(77, 214, 208, 0.06);
+}
+.meta-chip-skill .meta-chip-value {
+  color: #4dd6d0;
+}
+
+/* CP 卡片：双栏，左搭档右对家 */
+.result-cp-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+}
+.cp-card {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(245, 236, 214, 0.14);
+  border-radius: 12px;
+  background: rgba(245, 236, 214, 0.03);
+}
+.cp-icon {
+  font-size: 1.2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.cp-label {
+  font-size: 0.72rem;
+  color: rgba(245, 236, 214, 0.58);
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+.cp-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text, #f5ecd6);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cp-best {
+  border-color: rgba(212, 169, 87, 0.3);
+  background: linear-gradient(
+    135deg,
+    rgba(212, 169, 87, 0.08),
+    rgba(212, 169, 87, 0.02)
+  );
+}
+.cp-best .cp-name {
+  color: var(--accent, #d4a957);
+}
+.cp-worst {
+  border-color: rgba(230, 120, 120, 0.28);
+  background: linear-gradient(
+    135deg,
+    rgba(230, 120, 120, 0.08),
+    rgba(230, 120, 120, 0.02)
+  );
+}
+.cp-worst .cp-name {
+  color: #e78a8a;
+}
+
+/* 彩蛋触发态 kicker 高亮 */
+.result-kicker:has-text("隐藏人格"),
+body:has(.result-card[data-mode="egg"]) .result-kicker {
+  background: linear-gradient(
+    90deg,
+    rgba(212, 169, 87, 0.18),
+    rgba(77, 214, 208, 0.12)
+  );
+  border-color: var(--accent, #d4a957);
+  color: var(--accent, #d4a957);
+  animation: eggPulse 2.4s ease-in-out infinite;
+}
+@keyframes eggPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(212, 169, 87, 0.35); }
+  50% { box-shadow: 0 0 18px 4px rgba(212, 169, 87, 0.25); }
+}
+
+/* 小屏精调 */
+@media (max-width: 420px) {
+  .result-cp-row { grid-template-columns: 1fr; }
+  .result-roast { padding-left: 2rem; }
+  .roast-quote { font-size: 2rem; left: 0.5rem; }
+  .roast-text { font-size: 0.92rem; }
+}
+
+/* =======================================================
+ * 分享海报 Modal + 次要按钮
+ * ======================================================= */
+
+.btn-secondary {
+  background: rgba(212, 169, 87, 0.08);
+  color: #d4a957;
+  border: 1px solid rgba(212, 169, 87, 0.4);
+}
+.btn-secondary:hover {
+  background: rgba(212, 169, 87, 0.15);
+  border-color: rgba(212, 169, 87, 0.65);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: rgba(245, 236, 214, 0.8);
+  border: 1px solid rgba(245, 236, 214, 0.22);
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.btn-ghost:hover { background: rgba(245, 236, 214, 0.06); }
+
+.result-actions {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.result-actions .btn { flex: 1 1 auto; min-width: 140px; }
+
+/* Modal */
+.poster-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  padding-top: max(1rem, env(safe-area-inset-top));
+  padding-bottom: max(1rem, env(safe-area-inset-bottom));
+}
+.poster-modal[hidden] { display: none !important; }
+.poster-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(5, 4, 2, 0.78);
+  backdrop-filter: blur(6px);
+}
+.poster-modal-body {
+  position: relative;
+  max-width: 420px;
+  width: 100%;
+  max-height: 100%;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #1f170b, #14100a);
+  border: 1px solid rgba(212, 169, 87, 0.28);
+  border-radius: 18px;
+  padding: 1.1rem 1.1rem 1.1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+}
+
+.poster-modal-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 0.85rem;
+  background: rgba(212, 169, 87, 0.09);
+  border: 1px solid rgba(212, 169, 87, 0.25);
+  border-radius: 10px;
+  color: #d4a957;
+  font-size: 0.88rem;
+  line-height: 1.4;
+}
+.poster-tip-icon { font-size: 1rem; }
+
+.poster-img-wrap {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  overflow: hidden;
+  background: rgba(255, 255, 255, 0.03);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.poster-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  user-select: none;
+  -webkit-touch-callout: default;
+}
+.poster-loading {
+  color: rgba(245, 236, 214, 0.7);
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  animation: poster-pulse 1.2s ease-in-out infinite;
+}
+@keyframes poster-pulse {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+.poster-actions {
+  display: flex;
+  gap: 0.6rem;
+}
+.poster-actions .btn { flex: 1; }
+

@@ -87,13 +87,15 @@ async function init() {
 
   let quiz;
   let lastLevels = null;
+  let lastResult = null;
+  let lastIdentity = "junior";
 
   function handleAnswer(value) {
     const next = quiz.answer(value);
     if (next) renderQuestion(next, quiz.progress());
   }
 
-  function onComplete({ answers, identity }) {
+  function onComplete({ answers, identity, special, eggs }) {
     const scores = calcDimensionScores(answers, questions.main);
     const levels = scoresToLevels(
       scores,
@@ -111,6 +113,36 @@ async function init() {
         showSecondary: config.ranking?.showSecondary ?? true,
       },
     );
+
+    // 彩蛋触发：检查本次抽到的彩蛋题选项是否命中 triggerOn
+    // 命中则把主人格强制替换为 forceCode 指定的隐藏人格（优先取 special，其次 standard）
+    const activeEggs = Array.isArray(eggs) ? eggs : [];
+    for (const egg of activeEggs) {
+      const chosen = special?.[egg.id];
+      const trigger = egg.triggerOn;
+      if (!trigger || chosen !== trigger.value) continue;
+      const forced =
+        types.special.find((t) => t.code === trigger.forceCode) ||
+        types.standard.find((t) => t.code === trigger.forceCode);
+      if (!forced) continue;
+      // 把原主匹配降为次匹配，让用户仍看到"常规测得的自己"对比
+      const previousPrimary = result.primary;
+      result.primary = {
+        ...forced,
+        similarity: 100,
+        exact: dimensions.order.length,
+        distance: 0,
+        triggered: true,
+        triggeredBy: egg.id,
+      };
+      result.secondary = previousPrimary || result.secondary;
+      result.mode = "egg";
+      break; // 一次只触发一个彩蛋，避免冲突
+    }
+
+    lastResult = result;
+    lastIdentity = identity;
+
     // 先显示 result 页，让 CSS 生效（雷达图需要读取真实的容器宽度）
     showPage("result");
     // 下一帧渲染，确保 layout 就绪
@@ -139,6 +171,53 @@ async function init() {
     const first = quiz.start();
     renderQuestion(first, quiz.progress());
     showPage("quiz");
+  });
+
+  // —— 分享海报 ——
+  const posterModal = byId("poster-modal");
+  const posterImg = byId("poster-img");
+  const posterLoading = byId("poster-loading");
+  const posterDownload = byId("poster-download");
+
+  function openPosterModal() {
+    posterModal.hidden = false;
+    document.body.style.overflow = "hidden";
+  }
+  function closePosterModal() {
+    posterModal.hidden = true;
+    document.body.style.overflow = "";
+  }
+
+  byId("btn-share").addEventListener("click", async () => {
+    if (!lastResult) return;
+    openPosterModal();
+    posterImg.style.display = "none";
+    posterLoading.style.display = "";
+    posterLoading.textContent = "生成中…";
+    try {
+      const { renderPoster } = await import("./poster.js");
+      const dataUrl = await renderPoster({
+        primary: lastResult.primary,
+        secondary: lastResult.secondary,
+        levels: lastLevels,
+        identity: lastIdentity,
+        dimensions,
+        mode: lastResult.mode,
+      });
+      posterImg.src = dataUrl;
+      posterImg.style.display = "";
+      posterLoading.style.display = "none";
+      posterDownload.href = dataUrl;
+    } catch (err) {
+      console.error(err);
+      posterLoading.textContent = "生成失败：" + (err?.message || "未知错误");
+    }
+  });
+
+  byId("poster-close").addEventListener("click", closePosterModal);
+  byId("poster-backdrop").addEventListener("click", closePosterModal);
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !posterModal.hidden) closePosterModal();
   });
 
   // 雷达图 resize 重绘

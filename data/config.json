@@ -20,5 +20,9 @@
   "wealthGate": {
     "enabled": false,
     "questionId": "wealth_gate"
+  },
+  "easterEggs": {
+    "enabled": true,
+    "pickCount": 2
   }
 }
