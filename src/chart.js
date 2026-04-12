@@ -92,17 +92,27 @@ export function renderRadar(
   ctx.lineWidth = 2;
   ctx.stroke();
 
-  // 顶点
-  ctx.fillStyle = accent;
+  // 顶点：按 L/M/H 区分颜色与大小
   for (let i = 0; i < N; i++) {
     const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
     const lv = userLevels[dimOrder[i]] || "M";
     const rr = radius * (LEVEL_RADIUS[lv] ?? 2 / 3);
     const x = cx + Math.cos(angle) * rr;
     const y = cy + Math.sin(angle) * rr;
+    const vertexR = lv === "H" ? 4.5 : lv === "L" ? 3 : 3.5;
+    ctx.fillStyle =
+      lv === "H" ? accent : lv === "L" ? "#4dd6d0" : "rgba(245,236,214,0.85)";
     ctx.beginPath();
-    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.arc(x, y, vertexR, 0, Math.PI * 2);
     ctx.fill();
+    if (lv === "H") {
+      // 外圈高亮环
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.arc(x, y, vertexR + 2.5, 0, Math.PI * 2);
+      ctx.stroke();
+    }
   }
 
   // 标签
@@ -120,30 +130,16 @@ export function renderRadar(
     if (cos > 0.2) ctx.textAlign = "left";
     else if (cos < -0.2) ctx.textAlign = "right";
     else ctx.textAlign = "center";
-    ctx.fillText(label, lx, ly);
 
-    // 等级角标
+    // 根据等级微调标签颜色（高亮 H 维度，弱化 L）
     const lv = userLevels[dimOrder[i]] || "M";
-    ctx.fillStyle =
-      lv === "H"
-        ? accent
-        : lv === "L"
-          ? "rgba(245, 236, 214, 0.55)"
-          : "rgba(245, 236, 214, 0.82)";
-    ctx.font = `${Math.round(fontSize * 0.9)}px ui-monospace, monospace`;
-    ctx.fillText(
-      lv,
-      lx +
-        (cos > 0.2
-          ? label.length * fontSize * 0.9 + 4
-          : cos < -0.2
-            ? -label.length * fontSize * 0.9 - 4
-            : 0),
-      ly + fontSize,
-    );
-    ctx.fillStyle = labelColor;
-    ctx.font = `${fontSize}px -apple-system, "Microsoft YaHei", sans-serif`;
+    if (lv === "H") ctx.fillStyle = accent;
+    else if (lv === "L") ctx.fillStyle = "rgba(245, 236, 214, 0.6)";
+    else ctx.fillStyle = labelColor;
+
+    ctx.fillText(label, lx, ly);
   }
+  ctx.fillStyle = labelColor;
 
   // 中心点淡色
   ctx.fillStyle = gridStrong;
