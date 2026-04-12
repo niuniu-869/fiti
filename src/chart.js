@@ -2,127 +2,152 @@
  * 12 维雷达图（Canvas API，移动端自适应）
  */
 
-const LEVEL_RADIUS = { L: 1 / 3, M: 2 / 3, H: 1 }
+const LEVEL_RADIUS = { L: 1 / 3, M: 2 / 3, H: 1 };
 
-export function renderRadar(canvas, dimOrder, userLevels, dimensionDefs, opts = {}) {
-  if (!canvas) return
+export function renderRadar(
+  canvas,
+  dimOrder,
+  userLevels,
+  dimensionDefs,
+  opts = {},
+) {
+  if (!canvas) return;
   const {
-    accent = '#d4a957',
-    accentFill = 'rgba(212, 169, 87, 0.22)',
-    grid = 'rgba(255, 255, 255, 0.14)',
-    gridStrong = 'rgba(255, 255, 255, 0.35)',
-    labelColor = 'rgba(245, 236, 214, 0.92)',
-  } = opts
+    accent = "#d4a957",
+    accentFill = "rgba(212, 169, 87, 0.22)",
+    grid = "rgba(255, 255, 255, 0.14)",
+    gridStrong = "rgba(255, 255, 255, 0.35)",
+    labelColor = "rgba(245, 236, 214, 0.92)",
+  } = opts;
 
-  // 自适应：基于 CSS 尺寸 × devicePixelRatio 渲染清晰
-  const dpr = window.devicePixelRatio || 1
-  const cssSize = Math.min(
-    canvas.clientWidth || canvas.width || 360,
-    canvas.clientHeight || canvas.height || 360,
-  ) || 320
-  canvas.width = cssSize * dpr
-  canvas.height = cssSize * dpr
-  canvas.style.width = `${cssSize}px`
-  canvas.style.height = `${cssSize}px`
+  // 自适应：以容器宽度为基准 × devicePixelRatio 高清渲染
+  const dpr = window.devicePixelRatio || 1;
+  const parent = canvas.parentElement;
+  const parentW = parent ? parent.clientWidth : 0;
+  const parentH = parent ? parent.clientHeight : 0;
+  // 优先读父容器尺寸；canvas 自身 clientWidth 在初次渲染或 display:none 时不可靠
+  const rawSize = parentW || canvas.clientWidth || 0;
+  const cssSize = Math.max(
+    240,
+    Math.min(rawSize || 360, 520, window.innerWidth - 48),
+  );
+  canvas.width = cssSize * dpr;
+  canvas.height = cssSize * dpr;
+  canvas.style.width = `${cssSize}px`;
+  canvas.style.height = `${cssSize}px`;
 
-  const ctx = canvas.getContext('2d')
-  ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-  ctx.clearRect(0, 0, cssSize, cssSize)
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.clearRect(0, 0, cssSize, cssSize);
 
-  const cx = cssSize / 2
-  const cy = cssSize / 2
+  const cx = cssSize / 2;
+  const cy = cssSize / 2;
   // 给 label 预留空间
-  const radius = cssSize / 2 - Math.max(36, cssSize * 0.14)
-  const N = dimOrder.length
-  if (N === 0) return
+  const radius = cssSize / 2 - Math.max(36, cssSize * 0.14);
+  const N = dimOrder.length;
+  if (N === 0) return;
 
   // 网格三圈
-  ctx.strokeStyle = grid
-  ctx.lineWidth = 1
+  ctx.strokeStyle = grid;
+  ctx.lineWidth = 1;
   for (let r = 1; r <= 3; r++) {
-    const rr = (radius * r) / 3
-    ctx.beginPath()
+    const rr = (radius * r) / 3;
+    ctx.beginPath();
     for (let i = 0; i < N; i++) {
-      const angle = (Math.PI * 2 * i) / N - Math.PI / 2
-      const x = cx + Math.cos(angle) * rr
-      const y = cy + Math.sin(angle) * rr
-      if (i === 0) ctx.moveTo(x, y)
-      else ctx.lineTo(x, y)
+      const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+      const x = cx + Math.cos(angle) * rr;
+      const y = cy + Math.sin(angle) * rr;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
     }
-    ctx.closePath()
-    ctx.stroke()
+    ctx.closePath();
+    ctx.stroke();
   }
 
   // 轴线
-  ctx.strokeStyle = grid
+  ctx.strokeStyle = grid;
   for (let i = 0; i < N; i++) {
-    const angle = (Math.PI * 2 * i) / N - Math.PI / 2
-    ctx.beginPath()
-    ctx.moveTo(cx, cy)
-    ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius)
-    ctx.stroke()
+    const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+    ctx.stroke();
   }
 
   // 用户多边形
-  ctx.beginPath()
+  ctx.beginPath();
   for (let i = 0; i < N; i++) {
-    const angle = (Math.PI * 2 * i) / N - Math.PI / 2
-    const lv = userLevels[dimOrder[i]] || 'M'
-    const rr = radius * (LEVEL_RADIUS[lv] ?? 2 / 3)
-    const x = cx + Math.cos(angle) * rr
-    const y = cy + Math.sin(angle) * rr
-    if (i === 0) ctx.moveTo(x, y)
-    else ctx.lineTo(x, y)
+    const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    const lv = userLevels[dimOrder[i]] || "M";
+    const rr = radius * (LEVEL_RADIUS[lv] ?? 2 / 3);
+    const x = cx + Math.cos(angle) * rr;
+    const y = cy + Math.sin(angle) * rr;
+    if (i === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
   }
-  ctx.closePath()
-  ctx.fillStyle = accentFill
-  ctx.fill()
-  ctx.strokeStyle = accent
-  ctx.lineWidth = 2
-  ctx.stroke()
+  ctx.closePath();
+  ctx.fillStyle = accentFill;
+  ctx.fill();
+  ctx.strokeStyle = accent;
+  ctx.lineWidth = 2;
+  ctx.stroke();
 
   // 顶点
-  ctx.fillStyle = accent
+  ctx.fillStyle = accent;
   for (let i = 0; i < N; i++) {
-    const angle = (Math.PI * 2 * i) / N - Math.PI / 2
-    const lv = userLevels[dimOrder[i]] || 'M'
-    const rr = radius * (LEVEL_RADIUS[lv] ?? 2 / 3)
-    const x = cx + Math.cos(angle) * rr
-    const y = cy + Math.sin(angle) * rr
-    ctx.beginPath()
-    ctx.arc(x, y, 3, 0, Math.PI * 2)
-    ctx.fill()
+    const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    const lv = userLevels[dimOrder[i]] || "M";
+    const rr = radius * (LEVEL_RADIUS[lv] ?? 2 / 3);
+    const x = cx + Math.cos(angle) * rr;
+    const y = cy + Math.sin(angle) * rr;
+    ctx.beginPath();
+    ctx.arc(x, y, 3, 0, Math.PI * 2);
+    ctx.fill();
   }
 
   // 标签
-  const fontSize = Math.max(10, Math.round(cssSize * 0.036))
-  ctx.font = `${fontSize}px -apple-system, "Microsoft YaHei", sans-serif`
-  ctx.fillStyle = labelColor
-  ctx.textBaseline = 'middle'
+  const fontSize = Math.max(10, Math.round(cssSize * 0.036));
+  ctx.font = `${fontSize}px -apple-system, "Microsoft YaHei", sans-serif`;
+  ctx.fillStyle = labelColor;
+  ctx.textBaseline = "middle";
   for (let i = 0; i < N; i++) {
-    const angle = (Math.PI * 2 * i) / N - Math.PI / 2
-    const def = dimensionDefs[dimOrder[i]] || { name: dimOrder[i], emoji: '' }
-    const label = `${def.emoji || ''}${def.name || dimOrder[i]}`.trim()
-    const lx = cx + Math.cos(angle) * (radius + fontSize * 1.1)
-    const ly = cy + Math.sin(angle) * (radius + fontSize * 1.1)
-    const cos = Math.cos(angle)
-    if (cos > 0.2) ctx.textAlign = 'left'
-    else if (cos < -0.2) ctx.textAlign = 'right'
-    else ctx.textAlign = 'center'
-    ctx.fillText(label, lx, ly)
+    const angle = (Math.PI * 2 * i) / N - Math.PI / 2;
+    const def = dimensionDefs[dimOrder[i]] || { name: dimOrder[i], emoji: "" };
+    const label = `${def.emoji || ""}${def.name || dimOrder[i]}`.trim();
+    const lx = cx + Math.cos(angle) * (radius + fontSize * 1.1);
+    const ly = cy + Math.sin(angle) * (radius + fontSize * 1.1);
+    const cos = Math.cos(angle);
+    if (cos > 0.2) ctx.textAlign = "left";
+    else if (cos < -0.2) ctx.textAlign = "right";
+    else ctx.textAlign = "center";
+    ctx.fillText(label, lx, ly);
 
     // 等级角标
-    const lv = userLevels[dimOrder[i]] || 'M'
-    ctx.fillStyle = lv === 'H' ? accent : lv === 'L' ? 'rgba(245, 236, 214, 0.55)' : 'rgba(245, 236, 214, 0.82)'
-    ctx.font = `${Math.round(fontSize * 0.9)}px ui-monospace, monospace`
-    ctx.fillText(lv, lx + (cos > 0.2 ? label.length * fontSize * 0.9 + 4 : cos < -0.2 ? -label.length * fontSize * 0.9 - 4 : 0), ly + fontSize)
-    ctx.fillStyle = labelColor
-    ctx.font = `${fontSize}px -apple-system, "Microsoft YaHei", sans-serif`
+    const lv = userLevels[dimOrder[i]] || "M";
+    ctx.fillStyle =
+      lv === "H"
+        ? accent
+        : lv === "L"
+          ? "rgba(245, 236, 214, 0.55)"
+          : "rgba(245, 236, 214, 0.82)";
+    ctx.font = `${Math.round(fontSize * 0.9)}px ui-monospace, monospace`;
+    ctx.fillText(
+      lv,
+      lx +
+        (cos > 0.2
+          ? label.length * fontSize * 0.9 + 4
+          : cos < -0.2
+            ? -label.length * fontSize * 0.9 - 4
+            : 0),
+      ly + fontSize,
+    );
+    ctx.fillStyle = labelColor;
+    ctx.font = `${fontSize}px -apple-system, "Microsoft YaHei", sans-serif`;
   }
 
   // 中心点淡色
-  ctx.fillStyle = gridStrong
-  ctx.beginPath()
-  ctx.arc(cx, cy, 2, 0, Math.PI * 2)
-  ctx.fill()
+  ctx.fillStyle = gridStrong;
+  ctx.beginPath();
+  ctx.arc(cx, cy, 2, 0, Math.PI * 2);
+  ctx.fill();
 }

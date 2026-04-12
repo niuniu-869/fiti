@@ -111,16 +111,20 @@ async function init() {
         showSecondary: config.ranking?.showSecondary ?? true,
       },
     );
-    renderResult({
-      result,
-      levels,
-      identity,
-      dimensions,
-      types,
-      interpretations: { cognitive, behavioral, social },
-      config,
-    });
+    // 先显示 result 页，让 CSS 生效（雷达图需要读取真实的容器宽度）
     showPage("result");
+    // 下一帧渲染，确保 layout 就绪
+    requestAnimationFrame(() => {
+      renderResult({
+        result,
+        levels,
+        identity,
+        dimensions,
+        types,
+        interpretations: { cognitive, behavioral, social },
+        config,
+      });
+    });
   }
 
   quiz = createQuiz(questions, config, onComplete);
