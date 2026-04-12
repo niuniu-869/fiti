@@ -3,42 +3,80 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#1a1309" />
-  <meta name="description" content="FinanceTI 金融人格测试 · 基于认知·行为·社交三大模型的职业画像，12 维度精准匹配 18 种金融圈角色。" />
+  <meta name="theme-color" content="#14100a" />
+  <meta name="description" content="FinanceTI · 金融变身模拟器 — 如果你化身为金融人，你会变成谁？30 道尽调问卷，18 种金融人格，讽刺到位的朋友圈测评。" />
   <meta name="format-detection" content="telephone=no" />
-  <title>FinanceTI 金融人格测试</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.92em' font-size='92'>💰</text></svg>" />
+
+  <title>FinanceTI · 金融变身模拟器</title>
+
+  <!-- OG 分享卡 -->
+  <meta property="og:title" content="FinanceTI · 金融变身模拟器" />
+  <meta property="og:description" content="如果你化身为金融人，你会变成谁？" />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.92em' font-size='92'>💼</text></svg>" />
+
+  <!-- 字体 preconnect，加速首屏 -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 </head>
 <body>
   <div id="app">
 
-    <!-- 首页 -->
+    <!-- 顶部 Live Ticker（答题/结果页都显示） -->
+    <div id="ticker-bar" class="ticker-bar" hidden>
+      <div id="ticker-track" class="ticker-track"></div>
+    </div>
+
+    <!-- ========== 首页 Intro · 变身前 ========== -->
     <section id="page-intro" class="page active">
       <div class="card intro-card">
-        <div class="intro-badge">FiTI · v1.0</div>
-        <h1 class="intro-title" id="intro-title">FinanceTI<br/>金融人格测试</h1>
-        <p class="intro-subtitle" id="intro-subtitle">基于认知行为科学的金融职业画像</p>
+        <div class="intro-badge" id="intro-badge">FiTI · v4.0 · CONFIDENTIAL</div>
+
+        <h1 class="intro-title" id="intro-title">
+          Finance<span class="slash">/</span>TI
+        </h1>
+        <p class="intro-subtitle" id="intro-subtitle">
+          如果你化身为金融人<br/>你会变成谁？
+        </p>
+
+        <!-- 典型人设预告（轮播） -->
+        <div class="intro-preview" id="intro-preview">
+          <div class="preview-kicker">▼ 比如说，你可能会是 ▼</div>
+          <div class="preview-card" id="preview-card">
+            <div class="preview-code" id="preview-code">—</div>
+            <div class="preview-cn" id="preview-cn">—</div>
+            <p class="preview-roast" id="preview-roast">—</p>
+          </div>
+          <div class="preview-dots" id="preview-dots"></div>
+        </div>
 
         <ul class="intro-features">
-          <li><span>🧠</span><span>3 大模型 × 12 维度精准画像</span></li>
-          <li><span>💼</span><span>18 种金融圈原创人格</span></li>
-          <li><span>📊</span><span id="intro-reference">参考黑石 Pymetrics 测评体系</span></li>
-          <li><span>🎯</span><span>身份分层，实习 / 在职差异化建议</span></li>
+          <li><span>🧾</span><span>30 道尽调问卷 · 5 分钟速过</span></li>
+          <li><span>💼</span><span>18 种金融人格 + 3 枚隐藏档案</span></li>
+          <li><span>🥚</span><span>每次随机抽 2 道彩蛋题</span></li>
+          <li><span>📸</span><span>一键生成竖屏分享卡 · 带二维码</span></li>
         </ul>
 
-        <button id="btn-start" class="btn btn-primary">开始测试</button>
-        <p class="intro-note">约 5 分钟 · 33 道题（含 1 道身份问题 + 2 道随机彩蛋）</p>
-        <p class="intro-credit">开源项目 · 仅供娱乐参考</p>
+        <button id="btn-start" class="btn btn-primary">开始附身</button>
+        <p class="intro-note" id="intro-note">⚠ 约 5 分钟 · 33 题（身份 1 + 主题 30 + 彩蛋 2）</p>
+        <p class="intro-credit" id="intro-credit">— 本测评对真正的金融人保有最高敬意 ——</p>
       </div>
     </section>
 
-    <!-- 答题页 -->
+    <!-- ========== 答题页 Quiz · 尽调中 ========== -->
     <section id="page-quiz" class="page">
       <div class="card quiz-card">
-        <div class="progress-bar">
-          <div class="progress-fill" id="progress-fill"></div>
+        <div class="case-meta">
+          <span class="case-id" id="case-id">CASE 0/30</span>
+          <span id="case-dept">DUE DILIGENCE IN PROGRESS</span>
         </div>
-        <div class="progress-text" id="progress-text">0 / 33</div>
+
+        <!-- K 线蜡烛进度 -->
+        <div class="candle-progress" id="candle-progress"></div>
+        <div class="progress-text">
+          尽调完成度 <strong id="progress-text">0 / 33</strong>
+        </div>
 
         <div class="question-area">
           <p class="question-hint" id="question-hint"></p>
@@ -49,52 +87,95 @@
       </div>
     </section>
 
-    <!-- 结果页 -->
+    <!-- ========== 结果页 · Story 竖屏卡片流 ========== -->
     <section id="page-result" class="page">
-      <div class="card result-card" id="result-card">
-        <div class="result-identity" id="result-identity">身份</div>
-        <div class="result-kicker" id="result-kicker">你的金融人格</div>
-        <div class="result-code" id="result-code"></div>
-        <div class="result-name" id="result-name"></div>
-        <div class="result-title" id="result-title"></div>
-        <div class="result-badge" id="result-badge"></div>
-        <div class="result-intro" id="result-intro"></div>
-        <div class="result-desc" id="result-desc"></div>
+      <div class="result-wrap">
+        <div class="story-stack" id="story-stack">
 
-        <div class="result-secondary" id="result-secondary" style="display:none">
-          <div class="secondary-label">次要匹配</div>
-          <div class="secondary-info" id="secondary-info"></div>
-        </div>
+          <!-- Story 1 · 封面 Offer Letter -->
+          <article class="story story-cover" data-label="FILE · 01" data-num="1" id="story-1">
+            <div class="cover-kicker" id="cover-kicker">— OFFER LETTER · FiTI 人事档案 —</div>
+            <hr class="cover-hr"/>
+            <p class="cover-salutation">Dear 附身候选人,</p>
+            <p class="cover-body">
+              经我司综合研判，依据你本次 30 道尽调问卷之答复，<br/>
+              <strong>现诚挚邀请你附身为：</strong>
+            </p>
+            <p class="cover-identity"><strong id="cover-identity-cn">金融人</strong></p>
+            <p class="cover-body" id="cover-body-brief"></p>
+            <p class="cover-sign">—— FiTI HR Dept.</p>
+            <p class="cover-company" id="cover-company">FINANCETI · LUJIAZUI BRANCH</p>
+          </article>
 
-        <h3 class="section-title">十二维度画像</h3>
-        <div class="radar-wrap">
-          <canvas id="radar-chart"></canvas>
-        </div>
+          <!-- Story 2 · 代号大字报 (Hero) -->
+          <article class="story story-hero" data-label="FILE · 02" data-num="2" id="story-2">
+            <p class="hero-rarity">RARITY <strong id="hero-rarity">—</strong>· 稀有度</p>
+            <h2 class="hero-code" id="hero-code">CODE</h2>
+            <p class="hero-cn" id="hero-cn">中文名</p>
+            <p class="hero-title" id="hero-title">副标题</p>
+            <div class="hero-chips" id="hero-chips"></div>
+          </article>
 
-        <div class="dimensions-detail" id="dimensions-detail"></div>
+          <!-- Story 3 · Roast 金句 -->
+          <article class="story story-roast" data-label="FILE · 03" data-num="3" id="story-3">
+            <div class="roast-label">— 人格 ROAST · 请勿当真 —</div>
+            <p class="roast-quote" id="roast-quote"></p>
+            <p class="roast-desc" id="roast-desc"></p>
+          </article>
 
-        <div class="result-top">
-          <h3 class="section-title">最佳匹配 TOP 5</h3>
-          <div id="top-list" class="top-list"></div>
-        </div>
+          <!-- Story 4 · 12 维雷达 -->
+          <article class="story story-radar" data-label="FILE · 04" data-num="4" id="story-4">
+            <h3 class="section-title">你的 12 维画像</h3>
+            <div class="section-sub">RADAR · 认知 · 行为 · 社交</div>
+            <div class="radar-wrap">
+              <canvas id="radar-chart"></canvas>
+            </div>
+            <div class="dimensions-detail" id="dimensions-detail"></div>
+          </article>
 
-        <p class="disclaimer" id="disclaimer"></p>
-        <p class="fun-note" id="fun-note"></p>
+          <!-- Story 5 · 办公室 CP -->
+          <article class="story story-cp" data-label="FILE · 05" data-num="5" id="story-5">
+            <h3 class="section-title">办公室关系预告</h3>
+            <div class="cp-grid">
+              <div class="cp-card cp-best">
+                <div class="cp-role">BEST CP · 最佳拍档</div>
+                <div class="cp-name" id="cp-best-name">—</div>
+                <div class="cp-hint">能在茶水间聊到深夜</div>
+              </div>
+              <div class="cp-card cp-worst">
+                <div class="cp-role">WORST CP · 死对头</div>
+                <div class="cp-name" id="cp-worst-name">—</div>
+                <div class="cp-hint">合规会上必吵架</div>
+              </div>
+            </div>
+          </article>
 
-        <div class="result-actions">
-          <button id="btn-share" class="btn btn-secondary">📸 生成分享卡</button>
-          <button id="btn-restart" class="btn btn-primary">重新测试</button>
+          <!-- Story 6 · TOP 5 + 分享 -->
+          <article class="story story-share" data-label="FILE · 06" data-num="6" id="story-6">
+            <h3 class="section-title">最佳备选 TOP 5</h3>
+            <div class="section-sub">IF YOU HAD CHOSEN OTHERWISE ...</div>
+            <div id="top-list" class="top-list"></div>
+
+            <div class="share-cta">
+              <button id="btn-share" class="btn btn-primary">📸 生成分享卡</button>
+              <button id="btn-restart" class="btn btn-secondary">重新附身 · RE-DD</button>
+            </div>
+
+            <p class="disclaimer-row" id="disclaimer">—</p>
+            <p class="disclaimer-row" id="fun-note" style="margin-top: 0.5rem;">—</p>
+          </article>
+
         </div>
       </div>
     </section>
 
-    <!-- 分享海报 Modal -->
+    <!-- ========== 海报 Modal ========== -->
     <div id="poster-modal" class="poster-modal" hidden>
       <div class="poster-modal-backdrop" id="poster-backdrop"></div>
       <div class="poster-modal-body">
         <div class="poster-modal-hint">
-          <span class="poster-tip-icon">💡</span>
-          <span class="poster-tip-text">长按图片保存到相册 · 分享给朋友让 ta 也来测</span>
+          <span>💡</span>
+          <span>长按保存 · 发朋友圈等 ta 来测</span>
         </div>
         <div class="poster-img-wrap">
           <div id="poster-loading" class="poster-loading">生成中…</div>
