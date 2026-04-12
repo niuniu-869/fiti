@@ -1,0 +1,24 @@
+{
+  "scoring": {
+    "mode": "dynamic",
+    "thresholdRatio": 0.5,
+    "levelNumeric": { "L": 1, "M": 2, "H": 3 },
+    "fallbackThreshold": 45
+  },
+  "ranking": {
+    "topN": 5,
+    "showSecondary": true
+  },
+  "display": {
+    "title": "FinanceTI 金融人格测试",
+    "shortTitle": "FiTI",
+    "subtitle": "基于认知行为科学的金融职业画像",
+    "reference": "参考黑石 Pymetrics 体系",
+    "funNote": "本测试仅供娱乐，不构成职业咨询、投资建议或招聘依据。结果中的形象设定均为艺术加工，如有雷同纯属巧合。",
+    "disclaimer": "FiTI 仅供娱乐参考。真正的职业选择应结合个人价值观、家庭支持、市场环境与导师建议，系统给你的标签不是你的上限。"
+  },
+  "wealthGate": {
+    "enabled": false,
+    "questionId": "wealth_gate"
+  }
+}

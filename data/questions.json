@@ -1,0 +1,328 @@
+{
+  "anchor": [
+    {
+      "id": "anchor_1",
+      "text": "你目前的状态是？",
+      "options": [
+        { "label": "刚工作 1-3 年", "value": "junior" },
+        { "label": "在校生 / 实习中", "value": "intern" },
+        { "label": "工作 3 年以上", "value": "senior" }
+      ]
+    }
+  ],
+  "main": [
+    {
+      "id": "q1",
+      "dims": ["RISK", "DECISION"],
+      "text": "你走进一家新开的餐厅，菜单上有道菜写着「厨师的惊喜」。你会点吗？",
+      "options": [
+        { "label": "不点，我选认识的那几道", "value": 1 },
+        { "label": "当然点，惊喜才刺激", "value": 3 },
+        { "label": "先问服务员是啥，再决定", "value": 2 }
+      ]
+    },
+    {
+      "id": "q2",
+      "dims": ["FOCUS", "PATIENCE"],
+      "text": "你正在追一部悬疑剧，第一集片尾出现反转。你会？",
+      "options": [
+        { "label": "每天看一集，细水长流", "value": 2 },
+        { "label": "搜剧透，看完结局就弃剧", "value": 1 },
+        { "label": "直接一口气看完", "value": 3 }
+      ]
+    },
+    {
+      "id": "q3",
+      "dims": ["MEMORY", "LEARN"],
+      "text": "朋友推荐了一个好用的APP，你下载后？",
+      "options": [
+        { "label": "先收藏，以后再说", "value": 2 },
+        { "label": "三天后就忘了这事儿", "value": 1 },
+        { "label": "立刻探索所有功能", "value": 3 }
+      ]
+    },
+    {
+      "id": "q4",
+      "dims": ["STRATEGY", "EXECUTE"],
+      "text": "下个月要去旅行，你会怎么准备？",
+      "options": [
+        { "label": "走到哪算哪，带个手机就行", "value": 1 },
+        { "label": "提前两周做Excel行程表", "value": 3 },
+        { "label": "出发前一天晚上随便收拾", "value": 2 }
+      ]
+    },
+    {
+      "id": "q5",
+      "dims": ["SOCIAL", "EMOTION"],
+      "text": "聚会上有人说了一个冷笑话，全场尴尬。你会？",
+      "options": [
+        { "label": "假装没听见，继续吃喝", "value": 1 },
+        { "label": "大声笑，拯救气氛", "value": 3 },
+        { "label": "尴尬地跟着笑两声", "value": 2 }
+      ]
+    },
+    {
+      "id": "q6",
+      "dims": ["CONFLICT", "BOUNDARY"],
+      "text": "同事在群里@你：「帮我改一下这个PPT呗，很快的。」你会？",
+      "options": [
+        { "label": "虽然很忙但还是答应了", "value": 1 },
+        { "label": "问清楚要改啥，再决定", "value": 2 },
+        { "label": "直接说「我现在手头有事」", "value": 3 }
+      ]
+    },
+    {
+      "id": "q7",
+      "dims": ["RISK", "PATIENCE"],
+      "text": "你的股票跌了15%，手机一直在提醒。你会？",
+      "options": [
+        { "label": "立刻卖出，止损最重要", "value": 1 },
+        { "label": "加仓，打折了不买白不买", "value": 3 },
+        { "label": "关掉提醒，下个月再看", "value": 2 }
+      ]
+    },
+    {
+      "id": "q8",
+      "dims": ["FOCUS", "EXECUTE"],
+      "text": "你决定今天要完成一份报告。手机放在哪里？",
+      "options": [
+        { "label": "桌上，面朝下扣着", "value": 2 },
+        { "label": "手边，随时看消息", "value": 1 },
+        { "label": "另一个房间，静音", "value": 3 }
+      ]
+    },
+    {
+      "id": "q9",
+      "dims": ["DECISION", "EMOTION"],
+      "text": "相亲对象条件很好，但聊不来。家人催你定下来。你会？",
+      "options": [
+        { "label": "听家里的，条件好就行", "value": 1 },
+        { "label": "聊不来就是不行，不勉强", "value": 3 },
+        { "label": "再接触几次看看", "value": 2 }
+      ]
+    },
+    {
+      "id": "q10",
+      "dims": ["LEARN", "STRATEGY"],
+      "text": "你想学一个新技能，比如剪辑视频。你会？",
+      "options": [
+        { "label": "收藏一堆教程，然后就没了", "value": 1 },
+        { "label": "先看三个教程，做个学习计划", "value": 3 },
+        { "label": "下一个APP，边玩边学", "value": 2 }
+      ]
+    },
+    {
+      "id": "q11",
+      "dims": ["SOCIAL", "CONFLICT"],
+      "text": "在饭局上，有人一直在吹牛，明显在忽悠。你会？",
+      "options": [
+        { "label": "附和几句，给足面子", "value": 1 },
+        { "label": "当面拆穿他", "value": 3 },
+        { "label": "笑笑不说话，心里记一笔", "value": 2 }
+      ]
+    },
+    {
+      "id": "q12",
+      "dims": ["MEMORY", "BOUNDARY"],
+      "text": "朋友上次借了200块还没还，今天又借。你会？",
+      "options": [
+        { "label": "「行，但这次记得还」", "value": 2 },
+        { "label": "借了，但记在小本本上", "value": 1 },
+        { "label": "「上次那200先结一下？」", "value": 3 }
+      ]
+    },
+    {
+      "id": "q13",
+      "dims": ["PATIENCE", "DECISION"],
+      "text": "网购的东西到了，你发现颜色和图片有差距。你会？",
+      "options": [
+        { "label": "想想运费，算了", "value": 2 },
+        { "label": "立刻申请退换", "value": 3 },
+        { "label": "放着，懒得折腾", "value": 1 }
+      ]
+    },
+    {
+      "id": "q14",
+      "dims": ["FOCUS", "LEARN"],
+      "text": "你在研究一个问题，搜出来的文章太长了。你会？",
+      "options": [
+        { "label": "关掉，换个短的视频看", "value": 1 },
+        { "label": "扫标题和加粗部分", "value": 2 },
+        { "label": "从头到尾读完", "value": 3 }
+      ]
+    },
+    {
+      "id": "q15",
+      "dims": ["STRATEGY", "RISK"],
+      "text": "有个机会跳槽到创业公司，薪水涨30%但不稳定。你会？",
+      "options": [
+        { "label": "权衡利弊，看创始团队", "value": 2 },
+        { "label": "不去，稳定最重要", "value": 1 },
+        { "label": "去，年轻人怕什么", "value": 3 }
+      ]
+    },
+    {
+      "id": "q16",
+      "dims": ["EMOTION", "SOCIAL"],
+      "text": "你发现朋友的伴侣可能出轨了。你会？",
+      "options": [
+        { "label": "装作不知道，不是我该管的事", "value": 1 },
+        { "label": "找个合适的方式告诉朋友", "value": 3 },
+        { "label": "暗示一下，但不直说", "value": 2 }
+      ]
+    },
+    {
+      "id": "q17",
+      "dims": ["EXECUTE", "CONFLICT"],
+      "text": "你正在赶deadline，室友在打游戏很吵。你会？",
+      "options": [
+        { "label": "等他打完再说", "value": 1 },
+        { "label": "直接说「能不能小声点」", "value": 3 },
+        { "label": "戴降噪耳机，忍了", "value": 2 }
+      ]
+    },
+    {
+      "id": "q18",
+      "dims": ["BOUNDARY", "EMOTION"],
+      "text": "亲戚过年催婚：「你这个年纪该着急了。」你会？",
+      "options": [
+        { "label": "打哈哈岔开话题", "value": 2 },
+        { "label": "「我着急您能帮我找吗？」", "value": 3 },
+        { "label": "笑笑说「嗯嗯，在找了」", "value": 1 }
+      ]
+    },
+    {
+      "id": "q19",
+      "dims": ["LEARN", "PATIENCE"],
+      "text": "你想减肥，朋友推荐一个21天的计划。你会？",
+      "options": [
+        { "label": "下周一再开始吧", "value": 2 },
+        { "label": "收藏了，然后...就没有然后了", "value": 1 },
+        { "label": "从今天开始严格执行", "value": 3 }
+      ]
+    },
+    {
+      "id": "q20",
+      "dims": ["MEMORY", "STRATEGY"],
+      "text": "你计划攒钱买个东西，但总是忍不住剁手。你会？",
+      "options": [
+        { "label": "做预算表，强制储蓄", "value": 3 },
+        { "label": "算了，开心最重要", "value": 1 },
+        { "label": "告诉自己下次一定", "value": 2 }
+      ]
+    },
+    {
+      "id": "q21",
+      "dims": ["DECISION", "RISK"],
+      "text": "理发师问：「要不要试试新发型？」你会？",
+      "options": [
+        { "label": "照着照片剪，不要自由发挥", "value": 1 },
+        { "label": "稍微修一下就行", "value": 2 },
+        { "label": "来吧，试试才知适不适合", "value": 3 }
+      ]
+    },
+    {
+      "id": "q22",
+      "dims": ["SOCIAL", "BOUNDARY"],
+      "text": "同事请你帮忙朋友圈点赞，你发现那是微商广告。你会？",
+      "options": [
+        { "label": "点了，但设为不可见", "value": 2 },
+        { "label": "点了，以后屏蔽他", "value": 1 },
+        { "label": "直接说「不太方便」", "value": 3 }
+      ]
+    },
+    {
+      "id": "q23",
+      "dims": ["FOCUS", "MEMORY"],
+      "text": "你有个重要会议，走进会议室发现忘带笔记本了。你会？",
+      "options": [
+        { "label": "用手机记录要点", "value": 3 },
+        { "label": "算了，凭脑子记", "value": 1 },
+        { "label": "找同事借纸笔", "value": 2 }
+      ]
+    },
+    {
+      "id": "q24",
+      "dims": ["CONFLICT", "DECISION"],
+      "text": "点外卖发现送错了，商家说「要不你凑合吃吧，下次优惠。」你会？",
+      "options": [
+        { "label": "这次算了，下次记得补偿", "value": 2 },
+        { "label": "懒得argue，吃就吃吧", "value": 1 },
+        { "label": "不行，送错是你的问题", "value": 3 }
+      ]
+    },
+    {
+      "id": "q25",
+      "dims": ["STRATEGY", "EXECUTE"],
+      "text": "你想养成一个新习惯，比如每天读书。你会？",
+      "options": [
+        { "label": "有空就读，不强迫", "value": 1 },
+        { "label": "定具体时间地点，加入日程", "value": 3 },
+        { "label": "每天提醒自己读几页", "value": 2 }
+      ]
+    },
+    {
+      "id": "q26",
+      "dims": ["EMOTION", "CONFLICT"],
+      "text": "领导在会议上批评了你的方案，语气有点重。会后你会？",
+      "options": [
+        { "label": "心里不舒服，但表面平静", "value": 1 },
+        { "label": "找领导沟通，澄清误会", "value": 3 },
+        { "label": "闷头改方案，不解释", "value": 2 }
+      ]
+    },
+    {
+      "id": "q27",
+      "dims": ["PATIENCE", "LEARN"],
+      "text": "你学一个新软件，操作很复杂。第一天学不会，你会？",
+      "options": [
+        { "label": "找个替代软件", "value": 1 },
+        { "label": "每天花一小时坚持学", "value": 3 },
+        { "label": "用到哪学到哪", "value": 2 }
+      ]
+    },
+    {
+      "id": "q28",
+      "dims": ["RISK", "EXECUTE"],
+      "text": "你有一个创业想法，但需要辞职半年去验证。你会？",
+      "options": [
+        { "label": "先做MVP，边上班边试", "value": 3 },
+        { "label": "算了，还是打工稳定", "value": 1 },
+        { "label": "攒够钱再考虑", "value": 2 }
+      ]
+    },
+    {
+      "id": "q29",
+      "dims": ["MEMORY", "EMOTION"],
+      "text": "你想起一年前和朋友的争执，当时他说了伤人的话。现在？",
+      "options": [
+        { "label": "偶尔想起来，还是会不爽", "value": 2 },
+        { "label": "都过去了，关系早就修复", "value": 3 },
+        { "label": "那个场景历历在目", "value": 1 }
+      ]
+    },
+    {
+      "id": "q30",
+      "dims": ["SOCIAL", "STRATEGY"],
+      "text": "公司有个酒局，你知道去了会很累。你会？",
+      "options": [
+        { "label": "去，但找机会早退", "value": 2 },
+        { "label": "找借口不去，加班也好过酒局", "value": 3 },
+        { "label": "硬着头皮去，以后再说", "value": 1 }
+      ]
+    }
+  ],
+  "special": [
+    {
+      "id": "wealth_gate",
+      "special": true,
+      "kind": "wealth_gate",
+      "text": "朋友聚餐结账时，你通常会？",
+      "options": [
+        { "label": "等别人先开口，或者尽量少付", "value": 1 },
+        { "label": "主动买单，或者轮流请客", "value": 3 },
+        { "label": "AA，或者看情况", "value": 2 }
+      ]
+    }
+  ]
+}
