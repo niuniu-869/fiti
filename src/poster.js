@@ -1,90 +1,110 @@
 /**
- * 分享海报生成 v4 · 纸质档案风 Canvas
+ * 分享海报生成 v4.1 · 纸质档案风 Canvas
  *
- * 1080×1920 竖屏，完整复用 v4 视觉语言：
- *   · 纸米黄 + 红虚线内框 + 右上 CONFIDENTIAL 红章
- *   · 大字代号（金色描边）
- *   · 手写体 Roast 金句
- *   · 迷你 12 维雷达
- *   · CP 双栏（最佳拍档 / 死对头）
- *   · 二维码 + 话题标签
- * 彩蛋模式 → 切换为深琥珀 + 荧光橙高亮
+ * 布局策略：上下两端 pin，中段 flow
+ *   · 顶部档案号 + CONFIDENTIAL 章（固定）
+ *   · Kicker → Dear → CODE → CN 名 → 副标题 → Chips → Roast（从上往下流）
+ *   · 雷达 / CP / QR 从下往上 pin 固定位置
+ *   · 严格区分 ASCII / CJK 字体栈，避免字形缺失
+ *
+ * 1080 × 1920 竖屏
  */
 
 import QRCode from "qrcode";
 
 const SITE_URL = "https://niuniu-869.github.io/fiti/";
-
 const LEVEL_RADIUS = { L: 1 / 3, M: 2 / 3, H: 1 };
 
 const IDENTITY_COMPANY = {
-  intern: "LUJIAZUI BRANCH · 实习生池",
-  junior: "LUJIAZUI BRANCH · 初级合伙人",
-  senior: "LUJIAZUI BRANCH · 资深档案库",
+  intern: "LUJIAZUI · 实习生池",
+  junior: "LUJIAZUI · 初级合伙人",
+  senior: "LUJIAZUI · 资深档案库",
 };
 
-/** 颜色主题 */
+/* ========== 字体栈：严格区分 ASCII / CJK ========== */
+const FONT_MONO = `"JetBrains Mono", "SF Mono", "Courier New", ui-monospace, monospace`;
+const FONT_DISPLAY_ASCII = `"Bebas Neue", "Oswald", "Impact", sans-serif`; // 仅 ASCII
+const FONT_SERIF_ASCII = `"DM Serif Display", "Playfair Display", Georgia, serif`; // 仅 ASCII
+const FONT_CJK_SERIF = `"Noto Serif SC", "Source Han Serif SC", "PingFang SC", "STSong", serif`;
+const FONT_CJK_SANS = `"PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC", sans-serif`;
+const FONT_SCRIPT = `"Caveat", "Brush Script MT", cursive`; // 仅 ASCII（手写感英文）
+
 const THEME_NORMAL = {
   bg: "#f1e6c9",
-  bgEdge: "#e6d5a8",
   ink: "#1a140a",
-  inkDim: "rgba(26,20,10,0.62)",
-  inkMute: "rgba(26,20,10,0.4)",
+  inkDim: "rgba(26,20,10,0.64)",
+  inkMute: "rgba(26,20,10,0.42)",
   rouge: "#c93a3a",
   rougeInk: "#8e1b1b",
   gold: "#d4a24c",
   goldDeep: "#8e6622",
   bull: "#0e8f5a",
   bear: "#c93a3a",
+  gridSoft: "rgba(26,20,10,0.18)",
+  gridStrong: "rgba(26,20,10,0.42)",
+  radarFill: "rgba(201,58,58,0.22)",
+  roastBg: "rgba(201,58,58,0.05)",
+  roastQuote: "rgba(201,58,58,0.28)",
+  bestBg: "rgba(14,143,90,0.1)",
+  worstBg: "rgba(201,58,58,0.08)",
 };
-
 const THEME_EGG = {
   bg: "#13100a",
-  bgEdge: "#1e180e",
   ink: "#f0e4c8",
   inkDim: "rgba(240,228,200,0.72)",
-  inkMute: "rgba(240,228,200,0.4)",
+  inkMute: "rgba(240,228,200,0.42)",
   rouge: "#ff9500",
   rougeInk: "#ff6a00",
   gold: "#ffd27a",
   goldDeep: "#b8771f",
   bull: "#00ff88",
   bear: "#ff6a00",
+  gridSoft: "rgba(240,228,200,0.15)",
+  gridStrong: "rgba(240,228,200,0.35)",
+  radarFill: "rgba(255,149,0,0.28)",
+  roastBg: "rgba(255,149,0,0.06)",
+  roastQuote: "rgba(255,149,0,0.38)",
+  bestBg: "rgba(0,255,136,0.1)",
+  worstBg: "rgba(255,106,0,0.1)",
 };
 
-/** 文本按像素宽度折行 */
+/* ========== 工具 ========== */
+
+function setFont(ctx, size, weight, family, style = "") {
+  const pre = style ? `${style} ` : "";
+  ctx.font = `${pre}${weight} ${size}px ${family}`;
+}
+
 function wrapLines(ctx, text, maxWidth) {
-  const lines = [];
+  const out = [];
   let cur = "";
-  for (const ch of text) {
+  for (const ch of String(text)) {
     if (ch === "\n") {
-      lines.push(cur);
+      out.push(cur);
       cur = "";
       continue;
     }
     const test = cur + ch;
     if (ctx.measureText(test).width > maxWidth && cur) {
-      lines.push(cur);
+      out.push(cur);
       cur = ch;
     } else {
       cur = test;
     }
   }
-  if (cur) lines.push(cur);
-  return lines;
+  if (cur) out.push(cur);
+  return out;
 }
 
-/** 画虚线矩形 */
-function dashRect(ctx, x, y, w, h, color, dash = [8, 6], lineWidth = 1.5) {
+function dashRect(ctx, x, y, w, h, color, dash = [8, 6], lw = 1.5) {
   ctx.save();
   ctx.strokeStyle = color;
-  ctx.lineWidth = lineWidth;
+  ctx.lineWidth = lw;
   ctx.setLineDash(dash);
   ctx.strokeRect(x, y, w, h);
   ctx.restore();
 }
 
-/** 画圆角矩形 */
 function roundRect(ctx, x, y, w, h, r) {
   const radius = Math.min(r, w / 2, h / 2);
   ctx.beginPath();
@@ -96,18 +116,18 @@ function roundRect(ctx, x, y, w, h, r) {
   ctx.closePath();
 }
 
-/** 旋转绘制红章（rect 边框 + 文字） */
-function drawStamp(ctx, cx, cy, text, color, rotation = 0, fontSize = 28) {
+/** 红章：矩形描边 + 文字 */
+function drawStamp(ctx, cx, cy, text, color, rotation = 0, fontSize = 30) {
   ctx.save();
   ctx.translate(cx, cy);
   ctx.rotate((rotation * Math.PI) / 180);
   ctx.strokeStyle = color;
   ctx.fillStyle = color;
   ctx.lineWidth = 3;
-  ctx.font = `700 ${fontSize}px "Bebas Neue", Impact, sans-serif`;
+  setFont(ctx, fontSize, 700, FONT_DISPLAY_ASCII);
   const w = ctx.measureText(text).width + 28;
   const h = fontSize + 18;
-  ctx.globalAlpha = 0.85;
+  ctx.globalAlpha = 0.82;
   ctx.strokeRect(-w / 2, -h / 2, w, h);
   ctx.textBaseline = "middle";
   ctx.textAlign = "center";
@@ -115,16 +135,25 @@ function drawStamp(ctx, cx, cy, text, color, rotation = 0, fontSize = 28) {
   ctx.restore();
 }
 
-/** 迷你雷达绘制 */
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/* ========== 雷达 ========== */
+
 function drawRadar(ctx, cx, cy, radius, dimOrder, levels, defs, theme) {
   const N = dimOrder.length;
   if (!N) return;
   ctx.save();
 
-  // 网格 3 圈
-  ctx.strokeStyle = "rgba(26,20,10,0.22)";
-  if (theme === THEME_EGG) ctx.strokeStyle = "rgba(240,228,200,0.22)";
-  ctx.lineWidth = 1.5;
+  // 3 圈网格
+  ctx.strokeStyle = theme.gridSoft;
+  ctx.lineWidth = 1.2;
   for (let r = 1; r <= 3; r++) {
     const rr = (radius * r) / 3;
     ctx.beginPath();
@@ -139,6 +168,8 @@ function drawRadar(ctx, cx, cy, radius, dimOrder, levels, defs, theme) {
     ctx.stroke();
   }
   // 轴线
+  ctx.strokeStyle = theme.gridStrong;
+  ctx.lineWidth = 1;
   for (let i = 0; i < N; i++) {
     const a = (Math.PI * 2 * i) / N - Math.PI / 2;
     ctx.beginPath();
@@ -159,8 +190,7 @@ function drawRadar(ctx, cx, cy, radius, dimOrder, levels, defs, theme) {
     else ctx.lineTo(x, y);
   }
   ctx.closePath();
-  ctx.fillStyle = "rgba(201,58,58,0.22)";
-  if (theme === THEME_EGG) ctx.fillStyle = "rgba(255,149,0,0.3)";
+  ctx.fillStyle = theme.radarFill;
   ctx.fill();
   ctx.strokeStyle = theme.rouge;
   ctx.lineWidth = 3;
@@ -173,33 +203,35 @@ function drawRadar(ctx, cx, cy, radius, dimOrder, levels, defs, theme) {
     const rr = radius * (LEVEL_RADIUS[lv] ?? 2 / 3);
     const x = cx + Math.cos(a) * rr;
     const y = cy + Math.sin(a) * rr;
-    const vr = lv === "H" ? 7 : lv === "L" ? 4 : 5;
-    ctx.fillStyle = lv === "H" ? theme.gold : lv === "L" ? theme.bull : theme.rouge;
+    const vr = lv === "H" ? 8 : lv === "L" ? 5 : 6;
+    ctx.fillStyle =
+      lv === "H" ? theme.gold : lv === "L" ? theme.bull : theme.rouge;
     ctx.beginPath();
     ctx.arc(x, y, vr, 0, Math.PI * 2);
     ctx.fill();
   }
 
-  // 标签
+  // 标签（emoji + CJK 名）
+  setFont(ctx, 20, 700, FONT_CJK_SANS);
   ctx.fillStyle = theme.ink;
-  ctx.font = `700 18px "PingFang SC", "Microsoft YaHei", sans-serif`;
   ctx.textBaseline = "middle";
   for (let i = 0; i < N; i++) {
     const a = (Math.PI * 2 * i) / N - Math.PI / 2;
     const def = defs[dimOrder[i]] || { name: dimOrder[i], emoji: "" };
-    const label = `${def.emoji || ""}${def.name || dimOrder[i]}`.trim();
-    const lx = cx + Math.cos(a) * (radius + 24);
-    const ly = cy + Math.sin(a) * (radius + 24);
+    const label = `${def.emoji || ""} ${def.name || dimOrder[i]}`.trim();
+    const lx = cx + Math.cos(a) * (radius + 30);
+    const ly = cy + Math.sin(a) * (radius + 30);
     const cos = Math.cos(a);
-    if (cos > 0.25) ctx.textAlign = "left";
-    else if (cos < -0.25) ctx.textAlign = "right";
+    if (cos > 0.2) ctx.textAlign = "left";
+    else if (cos < -0.2) ctx.textAlign = "right";
     else ctx.textAlign = "center";
     ctx.fillText(label, lx, ly);
   }
   ctx.restore();
 }
 
-/** 主函数 */
+/* ========== 主渲染 ========== */
+
 export async function renderPoster({
   primary,
   levels,
@@ -207,12 +239,12 @@ export async function renderPoster({
   dimensions,
   mode = "normal",
 }) {
-  // 等字体加载（DM Serif Display / Bebas Neue / JetBrains Mono / Caveat）
+  // 等字体加载完再画
   if (document.fonts && document.fonts.ready) {
     try {
       await Promise.race([
         document.fonts.ready,
-        new Promise((r) => setTimeout(r, 1200)),
+        new Promise((r) => setTimeout(r, 1500)),
       ]);
     } catch (_) {}
   }
@@ -227,39 +259,37 @@ export async function renderPoster({
   canvas.height = H;
   const ctx = canvas.getContext("2d");
 
-  // —— 底 ——
+  /* ---------- 背景 ---------- */
   ctx.fillStyle = theme.bg;
   ctx.fillRect(0, 0, W, H);
 
-  // 淡淡的径向光晕
-  const grad = ctx.createRadialGradient(W / 2, 420, 0, W / 2, 420, 700);
-  grad.addColorStop(0, isEgg ? "rgba(255,149,0,0.22)" : "rgba(212,162,76,0.24)");
+  // 轻量径向光晕
+  const grad = ctx.createRadialGradient(W / 2, 380, 0, W / 2, 380, 700);
+  grad.addColorStop(
+    0,
+    isEgg ? "rgba(255,149,0,0.22)" : "rgba(212,162,76,0.22)",
+  );
   grad.addColorStop(1, "transparent");
   ctx.fillStyle = grad;
-  ctx.fillRect(0, 0, W, 1200);
+  ctx.fillRect(0, 0, W, 1100);
 
-  // 纸纹噪点（轻量版：稀疏点）
+  // 纸纹 / CRT
+  ctx.save();
   if (!isEgg) {
-    ctx.save();
-    ctx.fillStyle = "rgba(110,70,20,0.08)";
-    for (let i = 0; i < 1600; i++) {
+    ctx.fillStyle = "rgba(110,70,20,0.07)";
+    for (let i = 0; i < 1400; i++) {
       const x = Math.random() * W;
       const y = Math.random() * H;
       const s = Math.random() * 1.4 + 0.3;
       ctx.fillRect(x, y, s, s);
     }
-    ctx.restore();
   } else {
-    // 彩蛋：CRT 扫描线
-    ctx.save();
-    ctx.fillStyle = "rgba(255,149,0,0.06)";
-    for (let y = 0; y < H; y += 3) {
-      ctx.fillRect(0, y, W, 1);
-    }
-    ctx.restore();
+    ctx.fillStyle = "rgba(255,149,0,0.05)";
+    for (let y = 0; y < H; y += 3) ctx.fillRect(0, y, W, 1);
   }
+  ctx.restore();
 
-  // —— 外虚线框 ——
+  // 外双虚线框
   dashRect(ctx, 40, 40, W - 80, H - 80, theme.rougeInk, [14, 10], 2);
   dashRect(
     ctx,
@@ -272,209 +302,356 @@ export async function renderPoster({
     1,
   );
 
-  // —— 顶部档案 meta ——
-  ctx.fillStyle = theme.rougeInk;
-  ctx.font = `700 24px "JetBrains Mono", ui-monospace, monospace`;
-  ctx.textAlign = "left";
+  /* ========== 布局常量 ========== */
+  const LEFT = 90;
+  const RIGHT = W - 90;
+  const CONTENT_W = RIGHT - LEFT;
+
+  /* ========== §1. 顶部档案号 + CONFIDENTIAL 章（固定） ========== */
   ctx.textBaseline = "top";
-  const archiveNo = `FILE NO. ${Date.now().toString(36).slice(-6).toUpperCase()}`;
-  ctx.fillText(archiveNo, 90, 90);
-
-  // 右上红章 CONFIDENTIAL
-  drawStamp(ctx, W - 220, 140, "CONFIDENTIAL", theme.rouge, 6, 32);
-
-  // —— OFFER LETTER kicker ——
+  ctx.textAlign = "left";
   ctx.fillStyle = theme.rougeInk;
-  ctx.font = `700 26px "JetBrains Mono", monospace`;
-  ctx.textAlign = "center";
-  ctx.fillText(
-    isEgg ? "— HIDDEN FILE · 彩蛋档案解锁 —" : "— OFFER LETTER · FiTI 档案部 —",
-    W / 2,
-    210,
-  );
+  setFont(ctx, 24, 700, FONT_MONO);
+  const archiveNo = `FILE NO. ${Date.now().toString(36).slice(-6).toUpperCase()}`;
+  ctx.fillText(archiveNo, LEFT, 100);
 
-  // 分隔线
+  drawStamp(ctx, RIGHT - 130, 130, "CONFIDENTIAL", theme.rouge, 6, 30);
+
+  let cursorY = 180;
+
+  /* ========== §2. Kicker + 分隔线 ========== */
+  ctx.textAlign = "center";
+  ctx.fillStyle = theme.rougeInk;
+  setFont(ctx, 26, 700, FONT_MONO);
+  const kicker = isEgg
+    ? "— HIDDEN FILE · 彩蛋档案解锁 —"
+    : "— OFFER LETTER · FiTI 档案部 —";
+  ctx.fillText(kicker, W / 2, cursorY);
+  cursorY += 40;
+
   ctx.strokeStyle = theme.rougeInk;
   ctx.lineWidth = 1.5;
   ctx.beginPath();
-  ctx.moveTo(W / 2 - 200, 265);
-  ctx.lineTo(W / 2 + 200, 265);
+  ctx.moveTo(W / 2 - 220, cursorY);
+  ctx.lineTo(W / 2 + 220, cursorY);
   ctx.stroke();
+  cursorY += 24;
 
-  // 手写寒暄
+  /* ========== §3. "Dear, 附身候选人"（拆两段渲染，避开字形缺失） ========== */
+  const dearLatin = "Dear,";
+  const dearCjk = "附身候选人";
+
+  // 先量测两段宽度用各自字体
+  setFont(ctx, 44, 700, FONT_SCRIPT, "italic");
+  const wLatin = ctx.measureText(dearLatin).width;
+  setFont(ctx, 38, 500, FONT_CJK_SERIF, "italic");
+  const wCjk = ctx.measureText(dearCjk).width;
+  const gap = 18;
+  const totalW = wLatin + gap + wCjk;
+  const dearX = W / 2 - totalW / 2;
+
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
   ctx.fillStyle = theme.ink;
-  ctx.font = `italic 42px "Caveat", "PingFang SC", cursive`;
-  ctx.textAlign = "center";
-  ctx.fillText("Dear 附身候选人,", W / 2, 300);
+  // 画英文
+  setFont(ctx, 44, 700, FONT_SCRIPT, "italic");
+  ctx.fillText(dearLatin, dearX, cursorY);
+  // 画中文（字号略小对齐视觉重心）
+  setFont(ctx, 38, 500, FONT_CJK_SERIF, "italic");
+  ctx.fillText(dearCjk, dearX + wLatin + gap, cursorY + 6);
 
-  // —— 大字代号 HERO ——
+  cursorY += 72;
+
+  /* ========== §4. CODE 大字（纯 ASCII 字体，放心） ========== */
   const codeText = (primary.code || "FINANCER").toUpperCase();
-  let codeSize = 160;
-  ctx.font = `700 ${codeSize}px "Bebas Neue", Impact, sans-serif`;
-  // 自适应收缩
-  while (ctx.measureText(codeText).width > W - 160 && codeSize > 80) {
-    codeSize -= 8;
-    ctx.font = `700 ${codeSize}px "Bebas Neue", Impact, sans-serif`;
+  let codeSize = 158;
+  setFont(ctx, codeSize, 700, FONT_DISPLAY_ASCII);
+  while (ctx.measureText(codeText).width > CONTENT_W && codeSize > 72) {
+    codeSize -= 6;
+    setFont(ctx, codeSize, 700, FONT_DISPLAY_ASCII);
   }
-  // 金色描边 + 阴影
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.shadowColor = "rgba(0,0,0,0.25)";
-  ctx.shadowBlur = 8;
+  ctx.shadowColor = "rgba(0,0,0,0.22)";
+  ctx.shadowBlur = 10;
   ctx.shadowOffsetY = 4;
   ctx.fillStyle = isEgg ? theme.rouge : theme.ink;
-  ctx.fillText(codeText, W / 2, 400);
+  ctx.fillText(codeText, W / 2, cursorY);
   ctx.shadowBlur = 0;
   ctx.shadowOffsetY = 0;
-  // 再叠一层金色装饰描边
+  // 金色描边装饰
   ctx.strokeStyle = theme.gold;
   ctx.lineWidth = 2;
-  ctx.strokeText(codeText, W / 2, 400);
+  ctx.strokeText(codeText, W / 2, cursorY);
+  cursorY += codeSize * 0.96 + 6;
 
-  const heroBottom = 400 + codeSize * 1.05;
-
-  // 中文名
+  /* ========== §5. 中文名（CJK 衬线） ========== */
+  const cn = primary.cn || "金融人";
+  let cnSize = 72;
+  setFont(ctx, cnSize, 700, FONT_CJK_SERIF);
+  while (ctx.measureText(cn).width > CONTENT_W - 40 && cnSize > 44) {
+    cnSize -= 4;
+    setFont(ctx, cnSize, 700, FONT_CJK_SERIF);
+  }
   ctx.fillStyle = theme.rougeInk;
-  ctx.font = `italic 700 72px "DM Serif Display", "Noto Serif SC", serif`;
-  ctx.fillText(primary.cn || "金融人", W / 2, heroBottom + 10);
+  ctx.fillText(cn, W / 2, cursorY);
+  cursorY += cnSize + 12;
 
-  // 副标题（title）
-  ctx.fillStyle = theme.inkDim;
-  ctx.font = `italic 40px "Caveat", "PingFang SC", cursive`;
-  const titleText = primary.title || "";
-  const titleLines = wrapLines(ctx, titleText, W - 200).slice(0, 2);
-  titleLines.forEach((ln, i) => {
-    ctx.fillText(ln, W / 2, heroBottom + 110 + i * 48);
-  });
+  /* ========== §6. 副标题（斜体 CJK 衬线，最多两行） ========== */
+  if (primary.title) {
+    setFont(ctx, 32, 500, FONT_CJK_SERIF, "italic");
+    ctx.fillStyle = theme.inkDim;
+    const titleLines = wrapLines(ctx, primary.title, CONTENT_W - 80).slice(
+      0,
+      2,
+    );
+    titleLines.forEach((ln, i) => {
+      ctx.fillText(ln, W / 2, cursorY + i * 42);
+    });
+    cursorY += titleLines.length * 42;
+  }
+  cursorY += 22;
 
-  let cursorY = heroBottom + 110 + titleLines.length * 48 + 30;
-
-  // —— Chips ——
+  /* ========== §7. Chips ========== */
   const chips = [];
   if (isEgg) chips.push({ t: "🥚 隐藏档案", bg: theme.rouge, fg: "#111" });
   if (primary.rarity)
-    chips.push({ t: `稀有度 ${primary.rarity}`, bg: "transparent", fg: theme.rouge, border: theme.rouge });
+    chips.push({
+      t: `稀有度 ${primary.rarity}`,
+      border: theme.rouge,
+      fg: theme.rouge,
+    });
   if (!isEgg && primary.similarity != null)
-    chips.push({ t: `匹配 ${primary.similarity}%`, bg: "transparent", fg: theme.bull, border: theme.bull });
+    chips.push({
+      t: `匹配 ${primary.similarity}%`,
+      border: theme.bull,
+      fg: theme.bull,
+    });
   if (primary.skill)
-    chips.push({ t: `绝活·${primary.skill}`, bg: "transparent", fg: theme.goldDeep, border: theme.gold });
+    chips.push({
+      t: `绝活 · ${primary.skill}`,
+      border: theme.gold,
+      fg: theme.goldDeep,
+    });
   if (primary.difficulty)
-    chips.push({ t: primary.difficulty, bg: "transparent", fg: theme.goldDeep, border: theme.gold });
+    chips.push({
+      t: primary.difficulty,
+      border: theme.gold,
+      fg: theme.goldDeep,
+    });
 
-  ctx.font = `700 22px "JetBrains Mono", "PingFang SC", monospace`;
+  setFont(ctx, 22, 700, FONT_CJK_SANS);
   const chipPad = 18;
-  const chipGap = 14;
+  const chipGap = 12;
   const chipH = 44;
-  // 计算总宽
   const widths = chips.map((c) => ctx.measureText(c.t).width + chipPad * 2);
-  const totalW = widths.reduce((a, b) => a + b, 0) + chipGap * (chips.length - 1);
-  let cx = W / 2 - totalW / 2;
+  // 自动换行
+  const rows = [];
+  let row = [];
+  let rowW = 0;
   chips.forEach((c, i) => {
-    const cw = widths[i];
-    if (c.bg !== "transparent") {
-      ctx.fillStyle = c.bg;
-      roundRect(ctx, cx, cursorY, cw, chipH, 22);
-      ctx.fill();
+    const w = widths[i];
+    if (row.length && rowW + chipGap + w > CONTENT_W) {
+      rows.push({ items: row, totalW: rowW });
+      row = [c];
+      rowW = w;
+    } else {
+      if (row.length) rowW += chipGap;
+      row.push(c);
+      rowW += w;
     }
-    if (c.border) {
-      ctx.strokeStyle = c.border;
-      ctx.lineWidth = 2;
-      roundRect(ctx, cx, cursorY, cw, chipH, 22);
-      ctx.stroke();
-    }
-    ctx.fillStyle = c.fg;
-    ctx.textBaseline = "middle";
-    ctx.textAlign = "center";
-    ctx.fillText(c.t, cx + cw / 2, cursorY + chipH / 2 + 2);
-    cx += cw + chipGap;
   });
+  if (row.length) rows.push({ items: row, totalW: rowW });
 
-  cursorY += chipH + 60;
+  rows.forEach((r, rowIdx) => {
+    let cxp = W / 2 - r.totalW / 2;
+    r.items.forEach((c) => {
+      const idx = chips.indexOf(c);
+      const w = widths[idx];
+      if (c.bg) {
+        ctx.fillStyle = c.bg;
+        roundRect(ctx, cxp, cursorY, w, chipH, 22);
+        ctx.fill();
+      }
+      if (c.border) {
+        ctx.strokeStyle = c.border;
+        ctx.lineWidth = 2;
+        roundRect(ctx, cxp, cursorY, w, chipH, 22);
+        ctx.stroke();
+      }
+      ctx.fillStyle = c.fg;
+      ctx.textBaseline = "middle";
+      ctx.textAlign = "center";
+      ctx.fillText(c.t, cxp + w / 2, cursorY + chipH / 2 + 1);
+      cxp += w + chipGap;
+    });
+    cursorY += chipH + (rowIdx < rows.length - 1 ? 12 : 0);
+  });
+  cursorY += 40;
 
-  // —— Roast 金句区（引号框） ——
-  const roast = primary.roast || `你被归档为「${primary.cn || "金融人"}」。`;
-  // 装饰左竖线
+  /* ========== §8. Roast 引用框（CJK 衬线，非 Caveat） ========== */
+  // 先量测行数（最多 3 行，超出截断，避免与雷达区冲突）
+  const roast = primary.roast || `你被归档为「${cn}」。`;
+  const roastFontSize = 30;
+  const roastLineH = 46;
+  const roastMaxLines = 3;
+  setFont(ctx, roastFontSize, 500, FONT_CJK_SERIF);
+  const roastLinesAll = wrapLines(ctx, roast, CONTENT_W - 100);
+  let roastLines = roastLinesAll.slice(0, roastMaxLines);
+  if (roastLinesAll.length > roastMaxLines) {
+    let last = roastLines[roastMaxLines - 1];
+    while (
+      last.length > 0 &&
+      ctx.measureText(last + "…").width > CONTENT_W - 100
+    ) {
+      last = last.slice(0, -1);
+    }
+    roastLines[roastMaxLines - 1] = last + "…";
+  }
+
+  const boxPadY = 30;
+  const boxPadL = 70;
+  const boxPadR = 30;
+  const boxH = boxPadY * 2 + roastLines.length * roastLineH;
+  const boxX = LEFT;
+  const boxY = cursorY;
+
+  // 底色
+  ctx.fillStyle = theme.roastBg;
+  roundRect(ctx, boxX, boxY, CONTENT_W, boxH, 4);
+  ctx.fill();
+  // 左红竖线
   ctx.fillStyle = theme.rouge;
-  ctx.fillRect(100, cursorY, 8, 200);
-  // 大引号
-  ctx.fillStyle = isEgg ? "rgba(255,149,0,0.45)" : "rgba(201,58,58,0.45)";
-  ctx.font = `italic 160px "DM Serif Display", serif`;
+  ctx.fillRect(boxX, boxY, 8, boxH);
+
+  // 装饰左引号
+  ctx.save();
+  ctx.fillStyle = theme.roastQuote;
+  setFont(ctx, 150, 700, FONT_SERIF_ASCII);
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText("“", 80, cursorY - 40);
+  ctx.fillText('"', boxX + 22, boxY - 16);
+  ctx.restore();
 
-  // 金句文本（手写感 + 大号）
+  // 正文
   ctx.fillStyle = theme.ink;
-  ctx.font = `italic 44px "Caveat", "PingFang SC", cursive`;
-  const roastLines = wrapLines(ctx, roast, W - 280).slice(0, 5);
+  setFont(ctx, roastFontSize, 500, FONT_CJK_SERIF);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
   roastLines.forEach((ln, i) => {
-    ctx.fillText(ln, 140, cursorY + 10 + i * 60);
+    ctx.fillText(ln, boxX + boxPadL, boxY + boxPadY + i * roastLineH);
   });
 
-  cursorY += Math.max(200, 10 + roastLines.length * 60 + 40);
+  cursorY = boxY + boxH + 26;
 
-  // —— 12 维雷达 ——
-  const radarCX = W / 2;
-  const radarCY = cursorY + 220;
-  const radarR = 190;
-  drawRadar(ctx, radarCX, radarCY, radarR, dimensions.order, levels, dimensions.definitions, theme);
-
-  // 小标题
+  /* ========== §9. 雷达（从上往下 flow） ========== */
+  // 雷达小标题
+  setFont(ctx, 22, 700, FONT_MONO);
   ctx.fillStyle = theme.rougeInk;
-  ctx.font = `700 20px "JetBrains Mono", monospace`;
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
-  ctx.fillText("— 12 维人格画像 · RADAR —", radarCX, cursorY - 20);
+  ctx.fillText("— 12 维人格画像 · RADAR —", W / 2, cursorY);
+  cursorY += 34;
 
-  cursorY += 460;
+  const RADAR_R = 170;
+  const RADAR_LABEL_PAD = 38; // 标签外扩空间
+  const radarCX = W / 2;
+  const radarCY = cursorY + RADAR_LABEL_PAD + RADAR_R;
+  drawRadar(
+    ctx,
+    radarCX,
+    radarCY,
+    RADAR_R,
+    dimensions.order,
+    levels,
+    dimensions.definitions,
+    theme,
+  );
+  cursorY = radarCY + RADAR_R + RADAR_LABEL_PAD + 18;
 
-  // —— CP 双栏 ——
-  const cpCardW = (W - 220) / 2;
-  const cpCardH = 130;
+  /* ========== §10. CP 双栏 ========== */
+  const cpGap = 36;
+  const cpCardW = (CONTENT_W - cpGap) / 2;
+  const CP_H = 130;
   const cpY = cursorY;
-  // 左：最佳拍档
+
+  // —— 左：BEST ——
+  const leftX = LEFT;
   ctx.save();
-  ctx.fillStyle = isEgg ? "rgba(0,255,136,0.12)" : "rgba(14,143,90,0.12)";
-  roundRect(ctx, 90, cpY, cpCardW, cpCardH, 8);
+  ctx.fillStyle = theme.bestBg;
+  roundRect(ctx, leftX, cpY, cpCardW, CP_H, 8);
   ctx.fill();
   ctx.strokeStyle = theme.bull;
   ctx.lineWidth = 2;
-  roundRect(ctx, 90, cpY, cpCardW, cpCardH, 8);
+  roundRect(ctx, leftX, cpY, cpCardW, CP_H, 8);
   ctx.stroke();
+
+  setFont(ctx, 18, 700, FONT_MONO);
   ctx.fillStyle = theme.bull;
-  ctx.font = `700 18px "JetBrains Mono", monospace`;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText("💍 BEST CP · 最佳拍档", 110, cpY + 16);
+  ctx.fillText("BEST CP", leftX + 20, cpY + 18);
+  // 中文小标
+  setFont(ctx, 16, 700, FONT_CJK_SANS);
+  ctx.fillText("· 最佳拍档", leftX + 20 + 110, cpY + 21);
+
+  // 对象名
+  let bestName = primary.bestMatch || "—";
+  let bestSize = 36;
+  setFont(ctx, bestSize, 700, FONT_CJK_SERIF);
+  while (ctx.measureText(bestName).width > cpCardW - 40 && bestSize > 22) {
+    bestSize -= 2;
+    setFont(ctx, bestSize, 700, FONT_CJK_SERIF);
+  }
   ctx.fillStyle = theme.ink;
-  ctx.font = `italic 40px "DM Serif Display", "Noto Serif SC", serif`;
-  ctx.fillText(primary.bestMatch || "—", 110, cpY + 52);
+  ctx.fillText(bestName, leftX + 20, cpY + 56);
+
+  setFont(ctx, 15, 500, FONT_CJK_SANS);
+  ctx.fillStyle = theme.inkDim;
+  ctx.fillText("茶水间能聊到深夜", leftX + 20, cpY + CP_H - 32);
   ctx.restore();
 
-  // 右：死对头
-  const rightX = 90 + cpCardW + 40;
+  // —— 右：WORST ——
+  const rightX = LEFT + cpCardW + cpGap;
   ctx.save();
-  ctx.fillStyle = isEgg ? "rgba(255,106,0,0.12)" : "rgba(201,58,58,0.1)";
-  roundRect(ctx, rightX, cpY, cpCardW, cpCardH, 8);
+  ctx.fillStyle = theme.worstBg;
+  roundRect(ctx, rightX, cpY, cpCardW, CP_H, 8);
   ctx.fill();
   ctx.strokeStyle = theme.rouge;
   ctx.lineWidth = 2;
-  roundRect(ctx, rightX, cpY, cpCardW, cpCardH, 8);
+  roundRect(ctx, rightX, cpY, cpCardW, CP_H, 8);
   ctx.stroke();
+
+  setFont(ctx, 18, 700, FONT_MONO);
   ctx.fillStyle = theme.rouge;
-  ctx.font = `700 18px "JetBrains Mono", monospace`;
-  ctx.fillText("⚔️ WORST CP · 死对头", rightX + 20, cpY + 16);
+  ctx.textAlign = "left";
+  ctx.textBaseline = "top";
+  ctx.fillText("WORST CP", rightX + 20, cpY + 18);
+  setFont(ctx, 16, 700, FONT_CJK_SANS);
+  ctx.fillText("· 死对头", rightX + 20 + 120, cpY + 21);
+
+  let worstName = primary.worstMatch || "—";
+  let worstSize = 36;
+  setFont(ctx, worstSize, 700, FONT_CJK_SERIF);
+  while (ctx.measureText(worstName).width > cpCardW - 40 && worstSize > 22) {
+    worstSize -= 2;
+    setFont(ctx, worstSize, 700, FONT_CJK_SERIF);
+  }
   ctx.fillStyle = theme.ink;
-  ctx.font = `italic 40px "DM Serif Display", "Noto Serif SC", serif`;
-  ctx.fillText(primary.worstMatch || "—", rightX + 20, cpY + 52);
+  ctx.fillText(worstName, rightX + 20, cpY + 56);
+
+  setFont(ctx, 15, 500, FONT_CJK_SANS);
+  ctx.fillStyle = theme.inkDim;
+  ctx.fillText("合规会上必吵起来", rightX + 20, cpY + CP_H - 32);
   ctx.restore();
 
-  // —— 底部：二维码 + URL + 话题 ——
-  const qrSize = 200;
-  const qrX = 90;
-  const qrY = H - 280;
+  cursorY = cpY + CP_H + 28;
 
-  // 二维码（白底防微信压暗）
+  /* ========== §11. QR + 分享信息（最底） ========== */
+  const qrSize = 174;
+  const qrX = LEFT;
+  const qrY = cursorY;
+
   try {
     const qrDataUrl = await QRCode.toDataURL(SITE_URL, {
       width: qrSize,
@@ -483,7 +660,7 @@ export async function renderPoster({
       color: { dark: "#1a140a", light: "#ffffff" },
     });
     const qrImg = await loadImage(qrDataUrl);
-    // 白底卡片（彩蛋模式尤其需要）
+    // 白底卡片（微信压暗保护）
     ctx.fillStyle = "#fff";
     roundRect(ctx, qrX - 8, qrY - 8, qrSize + 16, qrSize + 16, 6);
     ctx.fill();
@@ -492,48 +669,44 @@ export async function renderPoster({
     console.warn("QR 生成失败", e);
   }
 
-  // 右侧：身份 + URL + 话题
-  const textX = qrX + qrSize + 36;
+  // 右侧文案
+  const textX = qrX + qrSize + 32;
+  setFont(ctx, 20, 700, FONT_MONO);
   ctx.fillStyle = theme.rougeInk;
-  ctx.font = `700 22px "JetBrains Mono", monospace`;
   ctx.textAlign = "left";
   ctx.textBaseline = "top";
-  ctx.fillText("SCAN · 扫码立刻附身", textX, qrY);
+  ctx.fillText("SCAN · 扫码附身", textX, qrY + 2);
 
+  setFont(ctx, 42, 700, FONT_DISPLAY_ASCII);
   ctx.fillStyle = theme.ink;
-  ctx.font = `italic 700 38px "DM Serif Display", "Noto Serif SC", serif`;
-  ctx.fillText("FinanceTI", textX, qrY + 36);
+  ctx.fillText("FINANCE / TI", textX, qrY + 32);
 
+  setFont(ctx, 17, 500, FONT_MONO);
   ctx.fillStyle = theme.inkDim;
-  ctx.font = `500 20px "JetBrains Mono", monospace`;
-  ctx.fillText("niuniu-869.github.io/fiti", textX, qrY + 88);
+  ctx.fillText("niuniu-869.github.io/fiti", textX, qrY + 84);
 
+  setFont(ctx, 18, 700, FONT_CJK_SANS);
   ctx.fillStyle = theme.rouge;
-  ctx.font = `700 22px "JetBrains Mono", monospace`;
-  ctx.fillText(IDENTITY_COMPANY[identity] || IDENTITY_COMPANY.junior, textX, qrY + 122);
-
-  ctx.fillStyle = theme.gold;
-  ctx.font = `italic 28px "Caveat", "PingFang SC", cursive`;
-  ctx.fillText("#FiTI  #金融变身模拟器", textX, qrY + 156);
-
-  // 底部 footer 小字
-  ctx.fillStyle = theme.inkMute;
-  ctx.font = `500 18px "JetBrains Mono", monospace`;
-  ctx.textAlign = "center";
   ctx.fillText(
-    "本测评仅供娱乐 · 不构成投资或职业建议 · 盈亏自负",
-    W / 2,
-    H - 60,
+    IDENTITY_COMPANY[identity] || IDENTITY_COMPANY.junior,
+    textX,
+    qrY + 114,
   );
 
-  return canvas.toDataURL("image/png");
-}
+  setFont(ctx, 28, 700, FONT_SCRIPT, "italic");
+  ctx.fillStyle = theme.gold;
+  const hashAscii = "#FiTI";
+  const hashAsciiW = ctx.measureText(hashAscii).width;
+  ctx.fillText(hashAscii, textX, qrY + 144);
+  setFont(ctx, 22, 700, FONT_CJK_SANS);
+  ctx.fillStyle = theme.gold;
+  ctx.fillText("#金融变身模拟器", textX + hashAsciiW + 14, qrY + 152);
 
-function loadImage(src) {
-  return new Promise((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = reject;
-    img.src = src;
-  });
+  // 页脚
+  setFont(ctx, 16, 500, FONT_MONO);
+  ctx.fillStyle = theme.inkMute;
+  ctx.textAlign = "center";
+  ctx.fillText("仅供娱乐 · 不构成投资或职业建议 · 盈亏自负", W / 2, H - 60);
+
+  return canvas.toDataURL("image/png");
 }
