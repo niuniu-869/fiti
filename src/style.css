@@ -594,6 +594,24 @@ body:not(.app-ready) #app {
   font-weight: 400;
 }
 
+/* 题目配图 —— 档案夹里的插图卡 */
+.question-illus {
+  width: clamp(150px, 44vw, 208px);
+  aspect-ratio: 1;
+  margin: 0.5rem auto 1rem;
+  border: 1.5px solid var(--ink-soft);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fffaec;
+  box-shadow: var(--shadow-paper);
+}
+.question-illus img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 /* 选项（盖章按钮） */
 .options {
   display: grid;
@@ -823,6 +841,35 @@ body:not(.app-ready) #app {
   letter-spacing: 0.08em;
   margin: 0 0.25em;
 }
+/* 人格配图 —— 档案照片，金边相纸 */
+.hero-illus {
+  width: clamp(186px, 56vw, 244px);
+  aspect-ratio: 1;
+  margin: 0.5rem auto 0.7rem;
+  border: 2px solid var(--gold-deep);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: #fffaec;
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.4),
+    0 0 0 5px var(--paper),
+    0 0 0 6px rgba(142, 102, 34, 0.45);
+  transform: rotate(-1.6deg);
+}
+.hero-illus img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.story-hero[data-mode="egg"] .hero-illus {
+  border-color: var(--bloomberg);
+  box-shadow:
+    0 8px 24px rgba(0, 0, 0, 0.55),
+    0 0 0 5px var(--ink-deep),
+    0 0 0 6px rgba(255, 149, 0, 0.5);
+}
+
 .hero-code {
   font-family: var(--font-stamp);
   font-size: clamp(2.8rem, 12vw, 5rem);

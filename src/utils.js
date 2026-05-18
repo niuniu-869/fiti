@@ -55,3 +55,19 @@ export async function loadJSON(url) {
   if (!res.ok) throw new Error(`Failed to load ${url}: ${res.status}`)
   return res.json()
 }
+
+/**
+ * 配图 URL：BASE_URL + cfg/<kind>/<name>.webp
+ * kind 为 'q'（题图）或 'type'（人格图）
+ */
+export function cfgImg(kind, name) {
+  return `${import.meta.env.BASE_URL}cfg/${kind}/${name}.webp`
+}
+
+/**
+ * 人格 code → 配图文件名 slug（须与 _configgen 生成脚本保持一致）
+ * 例：'QUANT_MONK' → 'quant_monk'
+ */
+export function typeSlug(code) {
+  return String(code).replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '').toLowerCase() || 'x'
+}

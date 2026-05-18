@@ -3,7 +3,7 @@
  * 金融变身模拟器 — ticker + 盖章尽调 + Story 竖屏结果流
  */
 
-import { setText, throttle } from "./utils.js";
+import { setText, throttle, cfgImg } from "./utils.js";
 import {
   calcDimensionScores,
   countDimensionHits,
@@ -180,6 +180,20 @@ async function init() {
       `CASE ${String(progress.current).padStart(2, "0")}/${String(progress.total).padStart(2, "0")}`,
     );
     setText(questionText, q.text);
+
+    // 题目配图：加载成功显示插画，失败则隐藏
+    const qIllus = byId("question-illus");
+    const qImg = byId("question-img");
+    if (qIllus && qImg) {
+      qIllus.style.display = "";
+      qImg.onload = () => {
+        qIllus.style.display = "";
+      };
+      qImg.onerror = () => {
+        qIllus.style.display = "none";
+      };
+      qImg.src = cfgImg("q", q.id);
+    }
 
     // hint
     if (q.special) {

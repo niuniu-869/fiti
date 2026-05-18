@@ -9,4 +9,6 @@ dist
 /smoke-*.png
 /v*-*.png
 /tmp
+# 配图高清母版（仅本地保留，web 用 public/cfg 下的 WebP）
+/assets/
 

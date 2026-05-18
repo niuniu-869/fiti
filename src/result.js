@@ -4,6 +4,7 @@
  */
 
 import { renderRadar } from "./chart.js";
+import { cfgImg, typeSlug } from "./utils.js";
 
 function byId(id) {
   return document.getElementById(id);
@@ -77,6 +78,19 @@ export function renderResult({
   setText(byId("hero-code"), primary.code || "—");
   setText(byId("hero-cn"), primary.cn || "");
   setText(byId("hero-title"), primary.title || "");
+
+  // 人格配图
+  const heroIllus = byId("hero-illus");
+  const heroImg = byId("hero-img");
+  if (heroIllus && heroImg) {
+    heroImg.onload = () => {
+      heroIllus.style.display = "";
+    };
+    heroImg.onerror = () => {
+      heroIllus.style.display = "none";
+    };
+    heroImg.src = cfgImg("type", typeSlug(primary.code || ""));
+  }
 
   // Chips
   const chipsWrap = byId("hero-chips");
